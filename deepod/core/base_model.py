@@ -217,9 +217,12 @@ class BaseDeepAD(metaclass=ABCMeta):
         """
 
         testing_n_samples = X.shape[0]
+        
+        window = self.seq_len if X.shape[0]>self.seq_len else X.shape[0] 
+        # Window allows predicting with data size lower than seq_len
 
         if self.data_type == 'ts':
-            X = get_sub_seqs(X, seq_len=self.seq_len, stride=1)
+            X = get_sub_seqs(X, seq_len=window, stride=1)
 
         representations = []
         s_final = np.zeros(testing_n_samples)
@@ -230,7 +233,7 @@ class BaseDeepAD(metaclass=ABCMeta):
             z, scores = self.decision_function_update(z, scores)
 
             if self.data_type == 'ts':
-                padding = np.zeros(self.seq_len-1)
+                padding = np.zeros(window-1)
                 scores = np.hstack((padding, scores))
 
             s_final += scores
